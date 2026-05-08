@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Movie Watchlist</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; max-width: 800px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #6f42c1; color: white; }
+        .form-container { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid #6f42c1; }
+        input, select { padding: 10px; margin-right: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px;}
+        .delete-btn { background: #dc3545; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+
+<h2>🍿 My Movie Watchlist</h2>
+
+<div class="form-container">
+    <h3>Add to Watchlist</h3>
+    <div>
+        <input type="text" id="title" placeholder="Movie Title" required>
+        <input type="text" id="director" placeholder="Director" required>
+        <select id="status">
+            <option value="PLAN_TO_WATCH">Plan to Watch</option>
+            <option value="WATCHED">Watched</option>
+        </select>
+        <button onclick="addMovie()">Add Movie</button>
+    </div>
+    <p id="message"></p>
+</div>
+
+<table>
+    <thead>
+    <tr><th>Title</th><th>Director</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody id="movieTableBody"></tbody>
+</table>
+
+<script>
+    const apiUrl = '/api/v1/movies';
+
+    async function fetchMovies() {
+        const response = await fetch(apiUrl);
+        const movies = await response.json();
+        const tableBody = document.getElementById('movieTableBody');
+        tableBody.innerHTML = '';
+
+        movies.forEach(movie => {
+            tableBody.innerHTML += `<tr>
+                    <td><strong>${movie.title}</strong></td>
+                    <td>${movie.director}</td>
+                    <td>${movie.status.replace(/_/g, ' ')}</td>
+                    <td><button class="delete-btn" onclick="deleteMovie('${movie.id}')">Remove</button></td>
+                </tr>`;
+        });
+    }
+
+    async function addMovie() {
+        const newMovie = {
+            title: document.getElementById('title').value,
+            director: document.getElementById('director').value,
+            status: document.getElementById('status').value
+        };
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMovie)
+        });
+
+        const msgEl = document.getElementById('message');
+        if (response.ok) {
+            msgEl.innerText = "Movie added successfully!";
+            msgEl.style.color = "green";
+            fetchMovies();
+        } else {
+            msgEl.innerText = "Error adding movie.";
+            msgEl.style.color = "red";
+        }
+    }
+
+    async function deleteMovie(id) {
+        await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        fetchMovies();
+    }
+
+    fetchMovies();
+</script>
+</body>
+</html>

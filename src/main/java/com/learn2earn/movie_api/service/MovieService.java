@@ -1,0 +1,90 @@
+package com.learn2earn.movie_api.service;
+
+import com.learn2earn.movie_api.dto.MovieResponseDTO;
+import com.learn2earn.movie_api.dto.MovieResponseV2DTO;
+import org.springframework.stereotype.Service;
+import com.learn2earn.movie_api.model.Movie;
+import com.learn2earn.movie_api.exception.*;
+import com.learn2earn.movie_api.model.Movie;
+import com.learn2earn.movie_api.repository.MovieRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class MovieService {
+
+    private final MovieRepository repository;
+
+    public MovieService(MovieRepository repository) {
+        this.repository = repository;
+    }
+
+
+    //V1 methods
+    public List<MovieResponseDTO> getAllMovies(){
+        return repository.findAll()
+                .stream()
+                .map(m -> new MovieResponseDTO(
+                        m.getId(),
+                        m.getTitle(),
+                        m.getDirector(),
+                        m.getStatus()))
+                .collect(Collectors.toList());
+    }
+
+    //find by id
+    public MovieResponseDTO getMovieById(String id){
+        Movie movie = repository.findById(id).orElseThrow(()->
+                new MovieNotFoundException(id));
+        return new MovieResponseDTO(
+                movie.getId(),
+                movie.getTitle(),
+                movie.getDirector(),
+                movie.getStatus());
+    }
+
+    //save movie
+    public MovieResponseDTO createMovie(MovieResponseDTO request){
+        Movie movie = new Movie(request.title(), request.director(), request.status());
+        Movie savedMovie = repository.save(movie);
+        return new MovieResponseDTO(
+                savedMovie.getId(),
+                savedMovie.getTitle(),
+                savedMovie.getDirector(),
+                savedMovie.getStatus());
+    }
+
+    //delete
+    public void deleteMovie(String id){
+        repository.findById(id).orElseThrow(()->
+                new MovieNotFoundException(id));
+        repository.delete(id);
+    }
+
+    //---------------------V2-------------------------V2--------------------------V2--------------
+    //V2 methods -> with rating
+
+    public List<MovieResponseV2DTO> getAllMoviesV2(){
+        return repository.findAll()
+                .stream()
+                .map(m -> new MovieResponseV2DTO(
+                        m.getId(),
+                        m.getTitle(),
+                        m.getDirector(),
+                        m.getStatus(),
+                        m.getRating()))
+                .collect(Collectors.toList());
+    }
+
+    public MovieResponseV2DTO getMovieByIdV2(String id){
+        Movie movie = repository.findById(id).orElseThrow(()->
+                new MovieNotFoundException(id));
+        return new MovieResponseV2DTO(
+                movie.getId(),
+                movie.getTitle(),
+                movie.getDirector(),
+                movie.getStatus(),
+                movie.getRating());
+    }
+}

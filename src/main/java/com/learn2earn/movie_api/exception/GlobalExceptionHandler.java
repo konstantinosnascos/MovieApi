@@ -1,0 +1,36 @@
+package com.learn2earn.movie_api.exception;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+//för att det ska fungera, ändra MovieNotFoundException till(String message) och (message)
+//    @ExceptionHandler(MovieNotFoundException.class)
+//    public ResponseEntity<Object> handleMovieNotFound(MovieNotFoundException ex) {
+//        return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.NOT_FOUND);
+//    }
+
+    @ExceptionHandler(MovieNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMovieNotFound(MovieNotFoundException ex, HttpServletRequest request) {
+        //format JSON error mapping 404
+        //fortsätt med mitt tidigare format
+        logger.warn("Movie not found: {}, path={}", ex.getMessage(), request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(404, "Not Found", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        //return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+}
