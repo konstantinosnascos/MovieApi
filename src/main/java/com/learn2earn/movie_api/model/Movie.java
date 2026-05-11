@@ -24,11 +24,11 @@ public class Movie {
     @Column(unique = false)
     private double rating;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "director_id", nullable = false)
     private Director director;
 
-    public Movie() {
+    protected Movie() {
     }
 
     public Movie(String title, Director director, String status) {
