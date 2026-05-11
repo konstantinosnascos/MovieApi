@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-public interface MovieRepository extends JpaRepository<Movie, String>{
+public interface MovieRepository extends JpaRepository<Movie, Long>{
 
 }
 
