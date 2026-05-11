@@ -21,7 +21,7 @@ public class MovieControllerV2 {
     }
 
     @GetMapping("/{id}")
-    public MovieResponseV2DTO getMovieById(@PathVariable String id){
+    public MovieResponseV2DTO getMovieById(@PathVariable Long id){
         return service.getMovieByIdV2(id);
     }
 }

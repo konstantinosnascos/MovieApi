@@ -33,35 +33,38 @@ public class MovieService {
                         m.getId(),
                         m.getTitle(),
                         m.getDirector().getName(),
-                        m.getStatus()))
+                        m.getStatus(),
+                        m.isLoaned()))
                 .collect(Collectors.toList());
     }
 
     //find by id
-    public MovieResponseDTO getMovieById(String id){
+    public MovieResponseDTO getMovieById(Long id){
         Movie movie = repository.findById(id).orElseThrow(()->
                 new MovieNotFoundException(id));
         return new MovieResponseDTO(
                 movie.getId(),
                 movie.getTitle(),
                 movie.getDirector().getName(),
-                movie.getStatus());
+                movie.getStatus(),
+                movie.isLoaned());
     }
 
     //save movie
     public MovieResponseDTO createMovie(MovieResponseDTO request){
-        Director director = directorRepository.findById(request.director()).orElseThrow(()-> new RuntimeException("Director not found"));
+        Director director = directorRepository.findById(Long.valueOf(request.director())).orElseThrow(()-> new DirectorNotFoundException(request.id()));
         Movie movie = new Movie(request.title(), director, request.status());
         Movie savedMovie = repository.save(movie);
         return new MovieResponseDTO(
                 savedMovie.getId(),
                 savedMovie.getTitle(),
                 savedMovie.getDirector().getName(),
-                savedMovie.getStatus());
+                savedMovie.getStatus(),
+                savedMovie.isLoaned());
     }
 
     //delete
-    public void deleteMovie(String id){
+    public void deleteMovie(Long id){
         repository.findById(id).orElseThrow(()->
                 new MovieNotFoundException(id));
         repository.deleteById(id);
@@ -78,11 +81,12 @@ public class MovieService {
                         m.getTitle(),
                         m.getDirector().getName(),
                         m.getStatus(),
-                        m.getRating()))
+                        m.getRating(),
+                        m.isLoaned()))
                 .collect(Collectors.toList());
     }
 
-    public MovieResponseV2DTO getMovieByIdV2(String id){
+    public MovieResponseV2DTO getMovieByIdV2(Long id){
         Movie movie = repository.findById(id).orElseThrow(()->
                 new MovieNotFoundException(id));
         return new MovieResponseV2DTO(
@@ -90,6 +94,7 @@ public class MovieService {
                 movie.getTitle(),
                 movie.getDirector().getName(),
                 movie.getStatus(),
-                movie.getRating());
+                movie.getRating(),
+                movie.isLoaned());
     }
 }

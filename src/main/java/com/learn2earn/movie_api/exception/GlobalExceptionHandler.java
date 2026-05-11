@@ -33,4 +33,16 @@ public class GlobalExceptionHandler {
         //return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(DirectorNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDirectorNotFound(DirectorNotFoundException ex, HttpServletRequest request) {
+        //format JSON error mapping 404
+        //fortsätt med mitt tidigare format
+        logger.warn("Director not found: {}, path={}", ex.getMessage(), request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(404, "Not Found", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        //return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
 }

@@ -23,7 +23,7 @@ public class MovieController {
     }
 
     @GetMapping(value = "/{id}")
-    public MovieResponseDTO getMovieById(@PathVariable String id){
+    public MovieResponseDTO getMovieById(@PathVariable Long id){
         return service.getMovieById(id);
     }
 
@@ -35,7 +35,7 @@ public class MovieController {
 
     @DeleteMapping( "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMovie(@PathVariable String id){
+    public void deleteMovie(@PathVariable Long id){
         service.deleteMovie(id);
     }
 }
