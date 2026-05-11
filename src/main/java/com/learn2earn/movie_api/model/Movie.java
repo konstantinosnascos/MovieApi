@@ -28,6 +28,8 @@ public class Movie {
     @JoinColumn(name = "director_id", nullable = false)
     private Director director;
 
+    private boolean isLoaned;
+
     protected Movie() {
     }
 
@@ -74,4 +76,12 @@ public class Movie {
     public void setRating(double rating) {
         this.rating = rating;
     }
+
+    public boolean isLoaned()
+    { return isLoaned;
+    }
+    public void setLoaned(boolean loaned) {
+        isLoaned = loaned;
+    }
+}
 }
