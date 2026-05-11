@@ -1,19 +1,37 @@
 package com.learn2earn.movie_api.model;
 
+import jakarta.persistence.*;
+
 import java.util.UUID;
 
+@Entity
+@Table(name = "movies")
 public class Movie {
     //Movie attributes
     //ADD imdb rating
     //add where to watch?
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(unique = true)
     private String title;
-    private String director;
+
+    @Column(unique = false)
     private String status; //WATCHED/PLAN-TO-WATCH
+
+    @Column(unique = false)
     private double rating;
 
-    public Movie(String title, String director, String status) {
-        this.id = UUID.randomUUID().toString();
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "director_id", nullable = false)
+    private Director director;
+
+    public Movie() {
+    }
+
+    public Movie(String title, Director director, String status) {
         this.title = title;
         this.director = director;
         this.status = status;
@@ -33,11 +51,11 @@ public class Movie {
         this.title = title;
     }
 
-    public String getDirector() {
+    public Director getDirector() {
         return director;
     }
 
-    public void setDirector(String director) {
+    public void setDirector(Director director) {
         this.director = director;
     }
 

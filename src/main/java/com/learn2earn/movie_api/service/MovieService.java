@@ -2,10 +2,11 @@ package com.learn2earn.movie_api.service;
 
 import com.learn2earn.movie_api.dto.MovieResponseDTO;
 import com.learn2earn.movie_api.dto.MovieResponseV2DTO;
+import com.learn2earn.movie_api.model.Director;
+import com.learn2earn.movie_api.repository.DirectorRepository;
 import org.springframework.stereotype.Service;
 import com.learn2earn.movie_api.model.Movie;
 import com.learn2earn.movie_api.exception.*;
-import com.learn2earn.movie_api.model.Movie;
 import com.learn2earn.movie_api.repository.MovieRepository;
 
 import java.util.List;
@@ -15,14 +16,17 @@ import java.util.stream.Collectors;
 public class MovieService {
 
     private final MovieRepository repository;
+    private final DirectorRepository directorRepository;
 
-    public MovieService(MovieRepository repository) {
+    public MovieService(MovieRepository repository, DirectorRepository directorRepository) {
         this.repository = repository;
+        this.directorRepository = directorRepository;
     }
 
 
     //V1 methods
     public List<MovieResponseDTO> getAllMovies(){
+
         return repository.findAll()
                 .stream()
                 .map(m -> new MovieResponseDTO(
@@ -59,7 +63,7 @@ public class MovieService {
     public void deleteMovie(String id){
         repository.findById(id).orElseThrow(()->
                 new MovieNotFoundException(id));
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     //---------------------V2-------------------------V2--------------------------V2--------------
