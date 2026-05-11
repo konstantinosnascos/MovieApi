@@ -32,7 +32,7 @@ public class MovieService {
                 .map(m -> new MovieResponseDTO(
                         m.getId(),
                         m.getTitle(),
-                        m.getDirector(),
+                        m.getDirector().getName(),
                         m.getStatus()))
                 .collect(Collectors.toList());
     }
@@ -44,18 +44,19 @@ public class MovieService {
         return new MovieResponseDTO(
                 movie.getId(),
                 movie.getTitle(),
-                movie.getDirector(),
+                movie.getDirector().getName(),
                 movie.getStatus());
     }
 
     //save movie
     public MovieResponseDTO createMovie(MovieResponseDTO request){
-        Movie movie = new Movie(request.title(), request.director(), request.status());
+        Director director = directorRepository.findById(request.director()).orElseThrow(()-> new RuntimeException("Director not found"));
+        Movie movie = new Movie(request.title(), director, request.status());
         Movie savedMovie = repository.save(movie);
         return new MovieResponseDTO(
                 savedMovie.getId(),
                 savedMovie.getTitle(),
-                savedMovie.getDirector(),
+                savedMovie.getDirector().getName(),
                 savedMovie.getStatus());
     }
 
@@ -75,7 +76,7 @@ public class MovieService {
                 .map(m -> new MovieResponseV2DTO(
                         m.getId(),
                         m.getTitle(),
-                        m.getDirector(),
+                        m.getDirector().getName(),
                         m.getStatus(),
                         m.getRating()))
                 .collect(Collectors.toList());
@@ -87,7 +88,7 @@ public class MovieService {
         return new MovieResponseV2DTO(
                 movie.getId(),
                 movie.getTitle(),
-                movie.getDirector(),
+                movie.getDirector().getName(),
                 movie.getStatus(),
                 movie.getRating());
     }
