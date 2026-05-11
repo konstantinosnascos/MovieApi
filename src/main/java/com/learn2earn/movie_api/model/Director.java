@@ -11,8 +11,8 @@ import java.util.List;
 public class Director {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(unique = true)
     private String name;
@@ -27,7 +27,7 @@ public class Director {
         this.name = name;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 

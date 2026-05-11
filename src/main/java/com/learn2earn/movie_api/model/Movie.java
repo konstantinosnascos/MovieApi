@@ -12,8 +12,8 @@ public class Movie {
     //add where to watch?
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(unique = true)
     private String title;
@@ -28,6 +28,7 @@ public class Movie {
     @JoinColumn(name = "director_id", nullable = false)
     private Director director;
 
+    @Column(unique = false)
     private boolean isLoaned;
 
     protected Movie() {
@@ -39,9 +40,10 @@ public class Movie {
         this.status = status;
         //Default rating we can consider 0;
         this.rating = 0;
+        isLoaned = false;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
@@ -83,5 +85,4 @@ public class Movie {
     public void setLoaned(boolean loaned) {
         isLoaned = loaned;
     }
-}
 }
