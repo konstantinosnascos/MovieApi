@@ -1,5 +1,6 @@
 package com.learn2earn.movie_api.service;
 
+import com.learn2earn.movie_api.dto.MovieRequestDTO;
 import com.learn2earn.movie_api.dto.MovieResponseDTO;
 import com.learn2earn.movie_api.dto.MovieResponseV2DTO;
 import com.learn2earn.movie_api.model.Director;
@@ -51,8 +52,9 @@ public class MovieService {
     }
 
     //save movie
-    public MovieResponseDTO createMovie(MovieResponseDTO request){
-        Director director = directorRepository.findById(Long.valueOf(request.director())).orElseThrow(()-> new DirectorNotFoundException(request.id()));
+    public MovieResponseDTO createMovie(MovieRequestDTO request){
+        Director director = directorRepository.findByName(request.director())
+                .orElseGet(() -> directorRepository.save(new Director(request.director())));
         Movie movie = new Movie(request.title(), director, request.status());
         Movie savedMovie = repository.save(movie);
         return new MovieResponseDTO(

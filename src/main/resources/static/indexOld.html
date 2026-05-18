@@ -49,19 +49,13 @@
         tableBody.innerHTML = '';
 
         movies.forEach(movie => {
-            tableBody.innerHTML += `<tr>\n                    <td><strong>${movie.title}</strong></td>\n                    <td>${movie.director}</td>\n                    <td>${movie.status.replace(/_/g, ' ')}</td>\n                    <td>\n                        <button class="delete-btn" onclick="deleteMovie('${movie.id}')">Remove</button>\n                        ${!movie.isLoaned ? `<button onclick="loanMovie(${movie.id})">Loan</button>` : '<span>Loaned Out</span>'}\n                    </td>\n                </tr>`;
+            tableBody.innerHTML += `<tr>
+                    <td><strong>${movie.title}</strong></td>
+                    <td>${movie.director}</td>
+                    <td>${movie.status.replace(/_/g, ' ')}</td>
+                    <td><button class="delete-btn" onclick="deleteMovie('${movie.id}')">Remove</button></td>
+                </tr>`;
         });
-    }
-    async function loanMovie(id) {
-        const borrower = prompt("Enter borrower name:");
-        if (!borrower) return;
-
-        const response = await fetch(`/api/v1/loans/${id}?borrowerName=${borrower}`, { method: 'POST' });
-        if (response.status === 409) {
-            alert("Conflict: Movie is already loaned out!");
-        } else {
-            fetchMovies(); // Refresh list to show loaned status
-        }
     }
 
     async function addMovie() {

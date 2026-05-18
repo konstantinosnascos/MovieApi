@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MovieNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleMovieNotFound(MovieNotFoundException ex, HttpServletRequest request) {
         //format JSON error mapping 404
-        //fortsätt med mitt tidigare format
+        //fortsätter med mitt tidigare format
         logger.warn("Movie not found: {}, path={}", ex.getMessage(), request.getRequestURI());
 
         ErrorResponse errorResponse = new ErrorResponse(404, "Not Found", ex.getMessage(), request.getRequestURI());
@@ -36,13 +36,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DirectorNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleDirectorNotFound(DirectorNotFoundException ex, HttpServletRequest request) {
         //format JSON error mapping 404
-        //fortsätt med mitt tidigare format
+        //fortsätter med mitt tidigare format
         logger.warn("Director not found: {}, path={}", ex.getMessage(), request.getRequestURI());
 
         ErrorResponse errorResponse = new ErrorResponse(404, "Not Found", ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
 
         //return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MovieAlreadyLoanedException.class)
+    public ResponseEntity<ErrorResponse> handleMovieAlreadyLoaned(MovieAlreadyLoanedException ex, HttpServletRequest request) {
+        //format JSON error mapping 409
+        //fortsätter med mitt tidigare format
+        logger.warn("Movie already loaned: {}, path={}", ex.getMessage(), request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(409, "Already loaned", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+
+        //return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.CONFLICT);
     }
 
 }
