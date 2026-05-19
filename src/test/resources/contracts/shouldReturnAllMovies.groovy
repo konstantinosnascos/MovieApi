@@ -14,11 +14,13 @@ Contract.make {
             contentType applicationJson()
         }
         body([
-                id: $(anyNumber()),
-                title: $(anyNonEmptyString()),
-                directorName: $(anyNonEmptyString()),
-                status: $(anyNonEmptyString()),
-                isLoaned: $(anyBoolean())
+                [
+                        id: $(anyNumber()),
+                        title: $(anyNonEmptyString()),
+                        director: $(anyNonEmptyString()),
+                        status: $(anyNonEmptyString()),
+                        isLoaned: $(anyBoolean())
+                ]
         ])
         }
     }

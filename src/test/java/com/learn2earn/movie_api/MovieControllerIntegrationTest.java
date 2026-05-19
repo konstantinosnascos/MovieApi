@@ -53,6 +53,7 @@ import com.learn2earn.movie_api.dto.MovieRequestDTO;
 import com.learn2earn.movie_api.model.Director;
 import com.learn2earn.movie_api.model.Movie;
 import com.learn2earn.movie_api.repository.DirectorRepository;
+import com.learn2earn.movie_api.repository.LoanRepository;
 import com.learn2earn.movie_api.repository.MovieRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,9 @@ class MovieControllerIntegrationTest {
     private MovieRepository movieRepository;
 
     @Autowired
+    private LoanRepository loanRepository;
+
+    @Autowired
     private DirectorRepository directorRepository;
 
     @Autowired
@@ -82,22 +86,24 @@ class MovieControllerIntegrationTest {
 
     @BeforeEach
     void setup(){
+        loanRepository.deleteAll();
         movieRepository.deleteAll();
         directorRepository.deleteAll();
     }
 
     @Test
     void createMovie_ShouldReturnCreated() throws Exception {
+
         MovieRequestDTO request = new MovieRequestDTO("Inception", "Christopher Nolan", "Available");
 
         mockMvc.perform(post("/api/v1/movies")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.title").value("Inception"))
-                .andExpect(jsonPath("$.title").value("Christopher Nolan"))
-                .andExpect(jsonPath("$.title").value("Available"));
+                .andExpect(jsonPath("$.director").value("Christopher Nolan"))
+                .andExpect(jsonPath("$.status").value("Available"));
     }
 
     @Test
@@ -113,18 +119,23 @@ class MovieControllerIntegrationTest {
     @Test
     void getMoviesById_ShouldReturnMovie() throws Exception {
         Director director = new Director("Wachovskis");
-        Movie movie = new Movie("The Matrix", director, "Wachovskis");
+        Movie movie= movieRepository.save(new Movie("The Matrix", director, "Available"));
 
-        mockMvc.perform(get("/api/v1/movies/1" + movie.getId()))
+        mockMvc.perform(get("/api/v1/movies/" + movie.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("The Matrix"));
     }
 
     @Test
     void getMovieById_ShouldReturn404_WhenNotFound() throws Exception {
+
         mockMvc.perform(get("/api/v1/movies/11111"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Not Found"));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.path").value("/api/v1/movies/11111"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test
@@ -137,7 +148,7 @@ class MovieControllerIntegrationTest {
 
     @Test
     void deleteMovieById_ShouldReturn404_WhenNotFound() throws Exception {
-        mockMvc.perform(delete("/api/v1/movies/11111"))
+        mockMvc.perform(delete("/api/v1/movies/11111/"))
                 .andExpect(status().isNotFound());
     }
 
@@ -173,10 +184,15 @@ class MovieControllerIntegrationTest {
     }
 
     @Test
-    public void testGetNonExistentMovieReturn404() throws Exception{
-        mockMvc.perform(get("/api/v1/movies/fake-id"))
+    public void testGetNonExistentMovieReturn404() throws Exception {
+
+        mockMvc.perform(get("/api/v1/movies/99999"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.path").value("/api/v1/movies/99999"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 
 }
