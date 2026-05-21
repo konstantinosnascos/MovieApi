@@ -1,7 +1,9 @@
 package com.learn2earn.movie_api.service;
 
 import com.learn2earn.movie_api.dto.LoanResponseDTO;
+import com.learn2earn.movie_api.exception.LoanNotFoundException;
 import com.learn2earn.movie_api.exception.MovieAlreadyLoanedException;
+import com.learn2earn.movie_api.exception.MovieAlreadyReturnedException;
 import com.learn2earn.movie_api.exception.MovieNotFoundException;
 import com.learn2earn.movie_api.model.Loan;
 import com.learn2earn.movie_api.model.Movie;
@@ -24,7 +26,7 @@ public class LoanService {
     }
 
     @Transactional
-    @CacheEvict(value = "movies", key = "#movieId")
+    @CacheEvict(value = "movies", allEntries = true)
     public void loanMovie(Long movieId, String borrowerName) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(()-> new MovieNotFoundException(movieId));
 
@@ -38,5 +40,28 @@ public class LoanService {
         loan.setLoanedDate(LocalDate.now());
 
         loanRepository.save(loan);
+    }
+
+    @Transactional
+    @CacheEvict(value = "movies", allEntries = true)
+    public LoanResponseDTO returnMovie(Long loanId) {
+        Loan loan = loanRepository.findById(loanId).orElseThrow(()-> new LoanNotFoundException(loanId));
+
+        if (loan.getReturnDate()!=null) {
+            throw new MovieAlreadyReturnedException(loanId);
+        }
+
+        loan.setReturnDate(LocalDate.now());
+
+        Movie movie = loan.getMovie();
+        movie.setLoaned(false);
+        movieRepository.save(movie);
+        loanRepository.save(loan);
+
+        return new LoanResponseDTO(
+                loan.getId(),
+                loan.getBorrowerName(),
+                movie.getTitle()
+        );
     }
 }

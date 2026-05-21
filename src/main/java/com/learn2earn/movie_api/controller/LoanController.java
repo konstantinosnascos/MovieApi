@@ -28,5 +28,10 @@ public class LoanController {
         loanService.loanMovie(movieId, borrowerName);
     }
 
+    @PutMapping("/{loanId}/return")
+    public LoanResponseDTO returnLoan(@PathVariable Long loanId){
+        return loanService.returnMovie(loanId);
+    }
+
 
 }

@@ -57,4 +57,18 @@ public class GlobalExceptionHandler {
         //return new ResponseEntity<>(Map.of("error", ex.getMessage()), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(LoanNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleLoanNotFound(LoanNotFoundException ex, HttpServletRequest request) {
+        logger.warn("Loan not found: {}, path={}", ex.getMessage(), request.getRequestURI());
+        ErrorResponse errorResponse = new ErrorResponse(404, "Not Found", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(MovieAlreadyReturnedException.class)
+    public ResponseEntity<ErrorResponse> handleMovieAlreadyReturned(MovieAlreadyReturnedException ex, HttpServletRequest request) {
+        logger.warn("Movie already returned: {}, path={}", ex.getMessage(), request.getRequestURI());
+
+        ErrorResponse errorResponse = new ErrorResponse(409, "Conflict", ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
 }

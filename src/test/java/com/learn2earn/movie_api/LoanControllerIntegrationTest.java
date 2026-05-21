@@ -2,6 +2,7 @@ package com.learn2earn.movie_api;
 import com.learn2earn.movie_api.exception.ErrorResponse;
 import com.learn2earn.movie_api.exception.*;
 import com.learn2earn.movie_api.model.Director;
+import com.learn2earn.movie_api.model.Loan;
 import com.learn2earn.movie_api.model.Movie;
 import com.learn2earn.movie_api.repository.DirectorRepository;
 import com.learn2earn.movie_api.repository.LoanRepository;
@@ -15,12 +16,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -85,5 +95,88 @@ class LoanControllerIntegrationTest {
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.path").value("/api/v1/loans/1111"))
                 .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    void returnedMovie_ShouldBePossibleToLoanAgain() throws Exception {
+
+        Director director = new Director("James Cameron");
+
+        Movie movie = movieRepository.save(
+                new Movie("Avatar", director, "Available")
+        );
+
+        mockMvc.perform(post("/api/v1/loans/" + movie.getId())
+                        .param("borrowerName", "John"))
+                .andExpect(status().isCreated());
+
+        Loan firstLoan = loanRepository.findAll().get(0);
+
+        mockMvc.perform(put("/api/v1/loans/" + firstLoan.getId() + "/return"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/v1/loans/" + movie.getId())
+                        .param("borrowerName", "Jane"))
+                .andExpect(status().isCreated());
+
+        List<Loan> loans = loanRepository.findAll();
+
+        assertEquals(2, loans.size());
+
+        Loan secondLoan = loans.get(1);
+
+        assertNotEquals(firstLoan.getId(), secondLoan.getId());
+
+        assertNull(secondLoan.getReturnDate());
+
+        Movie updatedMovie = movieRepository.findById(movie.getId()).get();
+
+        assertTrue(updatedMovie.isLoaned());
+    }
+
+    @Test
+    void returnMovie_ShouldReturn200AndSetReturnDate() throws Exception {
+
+        Director director = new Director("Ridley Scott");
+
+        Movie movie = movieRepository.save(
+                new Movie("Alien", director, "Available")
+        );
+
+        mockMvc.perform(post("/api/v1/loans/" + movie.getId())
+                        .param("borrowerName", "John"))
+                .andExpect(status().isCreated());
+
+        Loan loan = loanRepository.findAll().get(0);
+
+        mockMvc.perform(put("/api/v1/loans/" + loan.getId() + "/return"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(loan.getId()))
+                .andExpect(jsonPath("$.borrowerName").value("John"))
+                .andExpect(jsonPath("$.movieTitle").value("Alien"));
+
+        Loan updatedLoan = loanRepository.findById(loan.getId()).get();
+
+        assertNotNull(updatedLoan.getReturnDate());
+
+        Movie updatedMovie = movieRepository.findById(movie.getId()).get();
+
+        assertFalse(updatedMovie.isLoaned());
+    }
+
+    @Test
+    void loanMovie_ShouldReturn409_whenMovieIsAlreadyLoaned() throws Exception {
+        Director director = new Director("Christopher Nolan");
+        Movie movie = movieRepository.save(
+                new Movie("Inception", director, "Available"));
+
+        mockMvc.perform(post("/api/v1/loans/" + movie.getId())
+                .param("borrowerName", "John Doe"))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/v1/loans/" + movie.getId())
+                .param("borrowerName", "Kostas"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(movie.getId() + " is already loaned"));
     }
 }
