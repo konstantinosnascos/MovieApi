@@ -7,8 +7,11 @@ import com.learn2earn.movie_api.model.Loan;
 import com.learn2earn.movie_api.model.Movie;
 import com.learn2earn.movie_api.repository.LoanRepository;
 import com.learn2earn.movie_api.repository.MovieRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 
 @Service
 public class LoanService {
@@ -21,6 +24,7 @@ public class LoanService {
     }
 
     @Transactional
+    @CacheEvict(value = "movies", key = "#movieId")
     public void loanMovie(Long movieId, String borrowerName) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(()-> new MovieNotFoundException(movieId));
 
@@ -31,14 +35,8 @@ public class LoanService {
         movieRepository.save(movie);
 
         Loan loan = new Loan(borrowerName, movie);
+        loan.setLoanedDate(LocalDate.now());
+
         loanRepository.save(loan);
     }
-
-//    public Iterable<Loan> getAllLoans() {
-//        return loanRepository.findAll()
-//                .stream()
-//                .map(l -> new LoanResponseDTO()
-//                        l.
-//                )
-//    }
 }

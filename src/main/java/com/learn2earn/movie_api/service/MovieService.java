@@ -5,6 +5,8 @@ import com.learn2earn.movie_api.dto.MovieResponseDTO;
 import com.learn2earn.movie_api.dto.MovieResponseV2DTO;
 import com.learn2earn.movie_api.model.Director;
 import com.learn2earn.movie_api.repository.DirectorRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.learn2earn.movie_api.model.Movie;
 import com.learn2earn.movie_api.exception.*;
@@ -40,6 +42,7 @@ public class MovieService {
     }
 
     //find by id
+    @Cacheable(value = "movie", key = "#id")
     public MovieResponseDTO getMovieById(Long id){
         Movie movie = repository.findById(id).orElseThrow(()->
                 new MovieNotFoundException(id));
@@ -66,6 +69,7 @@ public class MovieService {
     }
 
     //delete
+    @CacheEvict(value = "movies", key = "#id")
     public void deleteMovie(Long id){
         repository.findById(id).orElseThrow(()->
                 new MovieNotFoundException(id));
