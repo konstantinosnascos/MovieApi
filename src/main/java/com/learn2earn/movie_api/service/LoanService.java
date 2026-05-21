@@ -1,6 +1,7 @@
 package com.learn2earn.movie_api.service;
 
 import com.learn2earn.movie_api.dto.LoanResponseDTO;
+import com.learn2earn.movie_api.dto.ReturnLoanDTO;
 import com.learn2earn.movie_api.exception.LoanNotFoundException;
 import com.learn2earn.movie_api.exception.MovieAlreadyLoanedException;
 import com.learn2earn.movie_api.exception.MovieAlreadyReturnedException;
@@ -64,4 +65,16 @@ public class LoanService {
                 movie.getTitle()
         );
     }
+
+    public ReturnLoanDTO getActiveLoan(Long movieId) {
+        Loan loan = loanRepository.findByMovieIdAndReturnDateIsNull(movieId).orElseThrow(
+                ()-> new LoanNotFoundException(movieId));
+        return new ReturnLoanDTO(
+                loan.getId(),
+                movieId,
+                loan.getMovie().getTitle(),
+                loan.getBorrowerName()
+        );
+    }
+
 }

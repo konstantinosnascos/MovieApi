@@ -1,6 +1,7 @@
 package com.learn2earn.movie_api.controller;
 
 import com.learn2earn.movie_api.dto.LoanResponseDTO;
+import com.learn2earn.movie_api.dto.ReturnLoanDTO;
 import com.learn2earn.movie_api.service.LoanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -33,5 +34,9 @@ public class LoanController {
         return loanService.returnMovie(loanId);
     }
 
+    @GetMapping("/{movieId}/active")
+    public ReturnLoanDTO getActiveLoan(@PathVariable Long movieId) {
+        return loanService.getActiveLoan(movieId);
+    }
 
 }

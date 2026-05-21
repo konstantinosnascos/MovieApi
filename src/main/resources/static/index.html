@@ -49,7 +49,9 @@
         tableBody.innerHTML = '';
 
         movies.forEach(movie => {
-            tableBody.innerHTML += `<tr>\n                    <td><strong>${movie.title}</strong></td>\n                    <td>${movie.director}</td>\n                    <td>${movie.status.replace(/_/g, ' ')}</td>\n                    <td>\n                        <button class="delete-btn" onclick="deleteMovie('${movie.id}')">Remove</button>\n                        ${!movie.isLoaned ? `<button onclick="loanMovie(${movie.id})">Loan</button>` : '<span>Loaned Out</span>'}\n                    </td>\n                </tr>`;
+            tableBody.innerHTML += `<tr>\n
+<td><strong>${movie.title}</strong></td>\n                    <td>${movie.director}</td>\n                    <td>${movie.status.replace(/_/g, ' ')}</td>\n                    <td>\n                        <button class="delete-btn" onclick="deleteMovie('${movie.id}')">Remove</button>\n
+${!movie.isLoaned ? `<button onclick="loanMovie(${movie.id})">Loan</button>` : `       <span>Loaned Out</span>     <button onclick="returnMovie(${movie.id})">          Return        </button>     `}                    </td>\n                </tr>`;
         });
     }
     async function loanMovie(id) {
@@ -61,6 +63,23 @@
             alert("Conflict: Movie is already loaned out!");
         } else {
             fetchMovies(); // Refresh list to show loaned status
+        }
+    }
+
+    async function returnMovie(movieId) {
+
+        const res = await fetch(`/api/v1/loans/${movieId}/active`);
+        const loan = await res.json();
+
+        const response = await fetch(
+            `/api/v1/loans/${loan.loanId}/return`,
+            { method: 'PUT' }
+        );
+
+        if (response.ok) {
+            fetchMovies();
+        } else {
+            alert("Could not return movie");
         }
     }
 
