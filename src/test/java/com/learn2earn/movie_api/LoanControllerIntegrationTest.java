@@ -4,9 +4,11 @@ import com.learn2earn.movie_api.exception.*;
 import com.learn2earn.movie_api.model.Director;
 import com.learn2earn.movie_api.model.Loan;
 import com.learn2earn.movie_api.model.Movie;
+import com.learn2earn.movie_api.model.User;
 import com.learn2earn.movie_api.repository.DirectorRepository;
 import com.learn2earn.movie_api.repository.LoanRepository;
 import com.learn2earn.movie_api.repository.MovieRepository;
+import com.learn2earn.movie_api.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +48,10 @@ class LoanControllerIntegrationTest {
     private DirectorRepository directorRepository;
     @Autowired
     private LoanRepository loanRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepo;
 
     @BeforeEach
     public void setup(){
@@ -55,9 +62,15 @@ class LoanControllerIntegrationTest {
 
     @Test
     void borrowMovie_ShouldReturnCreatedAndSetLoanStatus() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
         Director director = new Director("Ridley Scott");
-        Movie movie = movieRepository.save(new Movie("Alien", director, "Available"));
+        Movie movie = movieRepository.save(new Movie("Alien", director, "Available", alice));
         mockMvc.perform(post("/api/v1/loans/" + movie.getId())
                 .param("borrowerName", "John Doe"))
                 .andExpect(status().isCreated());
@@ -68,9 +81,15 @@ class LoanControllerIntegrationTest {
 
     @Test
     void borrowMovie_ShouldReturnConflict_WhenAlreadyLoaned() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
         Director director = new Director("Ridley Scott");
-        Movie movie = movieRepository.save(new Movie("Blade Runner", director, "Available"));
+        Movie movie = movieRepository.save(new Movie("Blade Runner", director, "Available", alice));
         movie.setLoaned(true);
         movie = movieRepository.save(movie);
 
@@ -99,11 +118,17 @@ class LoanControllerIntegrationTest {
 
     @Test
     void returnedMovie_ShouldBePossibleToLoanAgain() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
         Director director = new Director("James Cameron");
 
         Movie movie = movieRepository.save(
-                new Movie("Avatar", director, "Available")
+                new Movie("Avatar", director, "Available", alice)
         );
 
         mockMvc.perform(post("/api/v1/loans/" + movie.getId())
@@ -136,11 +161,17 @@ class LoanControllerIntegrationTest {
 
     @Test
     void returnMovie_ShouldReturn200AndSetReturnDate() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
         Director director = new Director("Ridley Scott");
 
         Movie movie = movieRepository.save(
-                new Movie("Alien", director, "Available")
+                new Movie("Alien", director, "Available", alice)
         );
 
         mockMvc.perform(post("/api/v1/loans/" + movie.getId())
@@ -166,9 +197,16 @@ class LoanControllerIntegrationTest {
 
     @Test
     void loanMovie_ShouldReturn409_whenMovieIsAlreadyLoaned() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
+
         Director director = new Director("Christopher Nolan");
         Movie movie = movieRepository.save(
-                new Movie("Inception", director, "Available"));
+                new Movie("Inception", director, "Available", alice));
 
         mockMvc.perform(post("/api/v1/loans/" + movie.getId())
                 .param("borrowerName", "John Doe"))

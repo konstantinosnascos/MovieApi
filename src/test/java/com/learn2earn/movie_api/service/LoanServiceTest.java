@@ -8,6 +8,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,12 +28,24 @@ public class LoanServiceTest {
     @InjectMocks
     private LoanService loanService;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserRepository userRepo;
+
     @Test
     void borrowMovie_ThrowException_IfAlreadyLoaned(){
 
         //Prepare arrange of test instance
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
-        Movie movie = new Movie("Dune", new Director("Dennis"), "PLAN_TO_WATCH");
+        Movie movie = new Movie("Dune", new Director("Dennis"), "PLAN_TO_WATCH", alice);
         //set this movie as borrowed
 
         movie.setLoaned(true);

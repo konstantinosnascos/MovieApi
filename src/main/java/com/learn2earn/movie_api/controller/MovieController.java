@@ -3,6 +3,7 @@ package com.learn2earn.movie_api.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import com.learn2earn.movie_api.service.MovieService;
 import com.learn2earn.movie_api.dto.*;
@@ -18,24 +19,24 @@ public class MovieController {
     }
 
     @GetMapping
-    public List<MovieResponseDTO> getAllMovies(){
-        return service.getAllMovies();
+    public List<MovieResponseDTO> getAllMovies(Principal principal){
+        return service.getAllMovies(principal.getName());
     }
 
     @GetMapping(value = "/{id}")
-    public MovieResponseDTO getMovieById(@PathVariable Long id){
-        return service.getMovieById(id);
+    public MovieResponseDTO getMovieById(@PathVariable Long id, Principal principal){
+        return service.getMovieById(id, principal.getName());
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public MovieResponseDTO createMovie(@RequestBody MovieRequestDTO request){
-        return service.createMovie(request);
+    public MovieResponseDTO createMovie(@RequestBody MovieRequestDTO request, Principal principal){
+        return service.createMovie(request, principal.getName());
     }
 
     @DeleteMapping( "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMovie(@PathVariable Long id){
-        service.deleteMovie(id);
+    public void deleteMovie(@PathVariable Long id, Principal principal){
+        service.deleteMovie(id, principal.getName());
     }
 }

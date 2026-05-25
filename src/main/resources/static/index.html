@@ -39,48 +39,66 @@
     <tbody id="movieTableBody"></tbody>
 </table>
 
+<div>
+    <h3>Login</h3>
+    <input id="username" placeholder="username">
+    <input id="password" placeholder="password" type="password">
+    <button onclick="login()">Login</button>
+</div>
+
 <script>
+    let token = localStorage.getItem("token");
     const apiUrl = '/api/v1/movies';
 
+    async function login() {
+        const res = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            })
+        });
+
+        const data = await res.json();
+
+        token = typeof data === "string" ? data : data.token;
+        localStorage.setItem("token", token);
+
+        alert("Logged in!");
+        fetchMovies();
+    }
+
     async function fetchMovies() {
-        const response = await fetch(apiUrl);
+        if (!token) return;
+
+        const response = await fetch(apiUrl, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
         const movies = await response.json();
         const tableBody = document.getElementById('movieTableBody');
         tableBody.innerHTML = '';
 
         movies.forEach(movie => {
-            tableBody.innerHTML += `<tr>\n
-<td><strong>${movie.title}</strong></td>\n                    <td>${movie.director}</td>\n                    <td>${movie.status.replace(/_/g, ' ')}</td>\n                    <td>\n                        <button class="delete-btn" onclick="deleteMovie('${movie.id}')">Remove</button>\n
-${!movie.isLoaned ? `<button onclick="loanMovie(${movie.id})">Loan</button>` : `       <span>Loaned Out</span>     <button onclick="returnMovie(${movie.id})">          Return        </button>     `}                    </td>\n                </tr>`;
+            tableBody.innerHTML += `
+<tr>
+<td><strong>${movie.title}</strong></td>
+<td>${movie.director}</td>
+<td>${movie.status.replace(/_/g, ' ')}</td>
+<td>
+<button class="delete-btn" onclick="deleteMovie(${movie.id})">Remove</button>
+
+${!movie.isLoaned
+                ? `<button onclick="loanMovie(${movie.id})">Loan</button>`
+                : `<span>Loaned Out</span>
+       <button onclick="returnMovie(${movie.id})">Return</button>`
+            }
+</td>
+</tr>`;
         });
-    }
-    async function loanMovie(id) {
-        const borrower = prompt("Enter borrower name:");
-        if (!borrower) return;
-
-        const response = await fetch(`/api/v1/loans/${id}?borrowerName=${borrower}`, { method: 'POST' });
-        if (response.status === 409) {
-            alert("Conflict: Movie is already loaned out!");
-        } else {
-            fetchMovies(); // Refresh list to show loaned status
-        }
-    }
-
-    async function returnMovie(movieId) {
-
-        const res = await fetch(`/api/v1/loans/${movieId}/active`);
-        const loan = await res.json();
-
-        const response = await fetch(
-            `/api/v1/loans/${loan.loanId}/return`,
-            { method: 'PUT' }
-        );
-
-        if (response.ok) {
-            fetchMovies();
-        } else {
-            alert("Could not return movie");
-        }
     }
 
     async function addMovie() {
@@ -92,11 +110,15 @@ ${!movie.isLoaned ? `<button onclick="loanMovie(${movie.id})">Loan</button>` : `
 
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
             body: JSON.stringify(newMovie)
         });
 
         const msgEl = document.getElementById('message');
+
         if (response.ok) {
             msgEl.innerText = "Movie added successfully!";
             msgEl.style.color = "green";
@@ -108,7 +130,57 @@ ${!movie.isLoaned ? `<button onclick="loanMovie(${movie.id})">Loan</button>` : `
     }
 
     async function deleteMovie(id) {
-        await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+        await fetch(`${apiUrl}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        fetchMovies();
+    }
+
+    async function loanMovie(id) {
+        const borrower = prompt("Enter borrower name:");
+        if (!borrower) return;
+
+        const response = await fetch(
+            `/api/v1/loans/${id}?borrowerName=${borrower}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            }
+        );
+
+        if (response.status === 409) {
+            alert("Movie already loaned!");
+        }
+
+        fetchMovies();
+    }
+
+    async function returnMovie(movieId) {
+        const res1 = await fetch(`/api/v1/loans/${movieId}/active`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        const loan = await res1.json();
+
+        const res2 = await fetch(`/api/v1/loans/${loan.loanId}/return`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+
+        if (!res2.ok) {
+            alert("Could not return movie");
+        }
+
         fetchMovies();
     }
 

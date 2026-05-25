@@ -7,6 +7,11 @@ import java.util.*;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long>{
+    List<Movie> findByOwnerUsername(String username);
+
+    Optional<Movie> findByIdAndOwnerUsername(Long id, String username);
+
+
 
 }
 

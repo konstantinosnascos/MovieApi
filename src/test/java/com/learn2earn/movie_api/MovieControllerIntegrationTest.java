@@ -52,15 +52,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.learn2earn.movie_api.dto.MovieRequestDTO;
 import com.learn2earn.movie_api.model.Director;
 import com.learn2earn.movie_api.model.Movie;
+import com.learn2earn.movie_api.model.User;
 import com.learn2earn.movie_api.repository.DirectorRepository;
 import com.learn2earn.movie_api.repository.LoanRepository;
 import com.learn2earn.movie_api.repository.MovieRepository;
+import com.learn2earn.movie_api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -84,6 +87,12 @@ class MovieControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRepository userRepo;
+
     @BeforeEach
     void setup(){
         loanRepository.deleteAll();
@@ -93,6 +102,12 @@ class MovieControllerIntegrationTest {
 
     @Test
     void createMovie_ShouldReturnCreated() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
         MovieRequestDTO request = new MovieRequestDTO("Inception", "Christopher Nolan", "Available");
 
@@ -108,9 +123,15 @@ class MovieControllerIntegrationTest {
 
     @Test
     void getMovies_ShouldReturnList() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
         Director director = new Director("Steven Spielberg");
 
-        movieRepository.save(new Movie("Jurassic Park", director, "Available"));
+        movieRepository.save(new Movie("Jurassic Park", director, "Available", alice));
         mockMvc.perform(get("/api/v1/movies"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].title").value("Jurassic Park"));
@@ -118,8 +139,14 @@ class MovieControllerIntegrationTest {
 
     @Test
     void getMoviesById_ShouldReturnMovie() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
         Director director = new Director("Wachovskis");
-        Movie movie= movieRepository.save(new Movie("The Matrix", director, "Available"));
+        Movie movie= movieRepository.save(new Movie("The Matrix", director, "Available", alice));
 
         mockMvc.perform(get("/api/v1/movies/" + movie.getId()))
                 .andExpect(status().isOk())
@@ -140,8 +167,14 @@ class MovieControllerIntegrationTest {
 
     @Test
     void deleteMovie_ShouldReturnNoContent() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
         Director director = new Director("George Lucas");
-        Movie movie = movieRepository.save(new Movie("Star Wars", director, "Available"));
+        Movie movie = movieRepository.save(new Movie("Star Wars", director, "Available", alice));
         mockMvc.perform(delete("/api/v1/movies/" + movie.getId()))
                 .andExpect(status().isNoContent());
     }
@@ -155,9 +188,15 @@ class MovieControllerIntegrationTest {
     //V2 example
     @Test
     void getMoviesV2_ShouldReturnListWithRating() throws Exception {
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
 
         Director director = new Director("James Cameron");
-        Movie movie = new Movie("Avatar", director, "Available");
+        Movie movie = new Movie("Avatar", director, "Available", alice);
         movie.setRating(5);
         movieRepository.save(movie);
         mockMvc.perform(get("/api/v2/movies"))
@@ -176,7 +215,13 @@ class MovieControllerIntegrationTest {
 
     @Test
     public void testPostValidMoviesReturn201() throws Exception {
-        String jsonPayload = "{\"title\":\"The Matrix\",\"director\":\"Wachowskis\",\"status\":\"WATCHED\"}";
+        User alice = userRepo.save(
+                new User(
+                        "alice",
+                        passwordEncoder.encode("password")
+                )
+        );
+        String jsonPayload = "{\"title\":\"The Matrix\",\"director\":\"Wachowskis\",\"status\":\"WATCHED\",\"alice}";
         mockMvc.perform(post("/api/v1/movies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonPayload))

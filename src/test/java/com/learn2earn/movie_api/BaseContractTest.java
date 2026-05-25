@@ -21,9 +21,9 @@ public abstract class BaseContractTest {
     private MovieService movieService;
 
     @BeforeEach
-    public void setup(){
+    public void setup(String username){
         //we provide mock data so we can test our contract and get verifications
-        Mockito.when(movieService.getAllMovies()).thenReturn(List.of(new MovieResponseDTO(
+        Mockito.when(movieService.getAllMovies(username)).thenReturn(List.of(new MovieResponseDTO(
                 1L,
                 "Test Movie",
                 "Test Director",

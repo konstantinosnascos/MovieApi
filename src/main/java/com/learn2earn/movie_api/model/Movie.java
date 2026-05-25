@@ -15,7 +15,7 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = false)
     private String title;
 
     @Column(unique = false)
@@ -31,10 +31,14 @@ public class Movie {
     @Column(unique = false)
     private boolean isLoaned;
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     protected Movie() {
     }
 
-    public Movie(String title, Director director, String status) {
+    public Movie(String title, Director director, String status, User owner) {
         this.title = title;
         this.director = director;
         this.status = status;
@@ -69,6 +73,10 @@ public class Movie {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 
     public double getRating() {

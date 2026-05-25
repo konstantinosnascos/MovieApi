@@ -3,6 +3,8 @@ package com.learn2earn.movie_api.controller;
 import com.learn2earn.movie_api.service.MovieService;
 import org.springframework.web.bind.annotation.*;
 import com.learn2earn.movie_api.dto.MovieResponseV2DTO;
+
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -16,12 +18,12 @@ public class MovieControllerV2 {
     }
 
     @GetMapping
-    public List<MovieResponseV2DTO> getAllMovies(){
-        return service.getAllMoviesV2();
+    public List<MovieResponseV2DTO> getAllMovies(String username){
+        return service.getAllMoviesV2(username);
     }
 
     @GetMapping("/{id}")
-    public MovieResponseV2DTO getMovieById(@PathVariable Long id){
-        return service.getMovieByIdV2(id);
+    public MovieResponseV2DTO getMovieById(@PathVariable Long id, Principal principal){
+        return service.getMovieByIdV2(id, principal.getName());
     }
 }
